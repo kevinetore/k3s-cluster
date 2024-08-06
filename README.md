@@ -1,5 +1,8 @@
 # K3S Managed Cluster on Raspberry Pi 4
 
+<img src="https://github.com/user-attachments/assets/94566474-0914-41ba-81da-71732f20d3e0" width="350">
+
+
 This document provides an overview of the technologies used in a K3S managed cluster on Raspberry Pi 4, utilizing Tekton and ArgoCD for CI/CD. The cluster integrates with several components including Camunda, SurrealDB, a locally deployed container registry, Longhorn cluster storage, Traefik ingress, MetalLB, and Cert Manager.
 
 ## 1. Introduction
