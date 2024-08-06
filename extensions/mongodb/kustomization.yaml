@@ -1,0 +1,17 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# In order to react to a sudden, totally breaking change by bitnami in
+# https://github.com/bitnami/charts/issues/10539
+# we need to use the version of index from just before the change.
+# see comment here https://github.com/bitnami/charts/issues/10539#issuecomment-1144869092
+helmCharts:
+- name: mongodb
+  version: 13.16.0
+  valuesFile: values.yaml
+  repo: https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami
+  namespace: mongodb
+  releaseName: mongodb
+
+resources:
+  - base/namespace.yaml

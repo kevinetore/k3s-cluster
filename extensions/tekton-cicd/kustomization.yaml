@@ -1,0 +1,16 @@
+# Requires:
+## https://storage.googleapis.com/tekton-releases/dashboard/latest/release-full.yaml
+## https://storage.googleapis.com/tekton-releases/pipeline/latest/release.yaml
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - base/dashboard/ingress.yaml
+  - base/dashboard/rbac.yaml
+  - base/pipelines/git-clone-build-push.yaml
+  - base/tasks/git-clone.yaml
+  - base/tasks/kaniko.yaml
+  - base/namespace-cicd.yaml
+  - base/namespace.yaml
+  - base/secrets/git-ssh-secret.yaml

@@ -1,0 +1,14 @@
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: k3s-cluster-staging-io
+  namespace: traefik
+spec:
+  secretName: k3s-cluster-staging-tls
+  issuerRef:
+    name: letsencrypt-staging
+    kind: ClusterIssuer
+  commonName: "*.k3s-cluster.io"
+  dnsNames:
+    - "*.k3s-cluster.io"

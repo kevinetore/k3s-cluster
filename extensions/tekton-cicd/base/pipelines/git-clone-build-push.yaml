@@ -1,0 +1,67 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: git-clone-build-push-pipeline
+  namespace: tekton-cicd
+spec:
+  description: | 
+    this pipeline includes:
+    - fetching a git repository as the source
+    - using Kaniko to build a Docker image by Dockerfile
+    - pusing the built Docker image to our local registry
+
+  # Parameters
+  params:
+    - name: repo-url
+      type: string
+      description: The git repository URL to clone from.
+    - name: tag-name
+      type: string
+      description: The git tag or branch to clone.
+    - name: image-full-path-with-tag
+      type: string
+      description: The image full path to host the built image, with version tag
+    - name: build-context
+      type: string
+      default: ""
+      description: The build context used by Kaniko.
+
+  # Workspaces
+  workspaces:
+  - name: workspace
+  - name: ssh-directory-workspace
+  
+  # Tasks
+  tasks:
+    # 1. Task - fetch-repository
+    - name: fetch-repository
+      taskRef:
+        kind: Task
+        name: git-clone
+      params:
+      - name: url
+        value: $(params.repo-url)
+      - name: revision
+        value: $(params.tag-name)
+      - name: deleteExisting
+        value: "true"
+      workspaces:
+      - name: output
+        workspace: workspace
+      - name: ssh-directory
+        workspace: ssh-directory-workspace
+
+    # 2. Task - Kaniko build & push
+    - name: kaniko
+      runAfter: ["fetch-repository"]
+      taskRef:
+        kind: Task
+        name: kaniko
+      params:
+        - name: IMAGE
+          value: "$(params.image-full-path-with-tag)"
+        - name: CONTEXT
+          value: $(params.build-context)
+      workspaces:
+        - name: source
+          workspace: workspace

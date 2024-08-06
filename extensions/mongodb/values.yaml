@@ -1,0 +1,50 @@
+global:
+  storageClass: longhorn
+  namespaceOverride: mongodb
+
+architecture: standalone
+
+auth:
+  rootUser: root
+  rootPassword: k3s-cluster
+
+replicaCount: 1
+
+nodeSelector:
+  kubernetes.io/hostname: master1
+
+resources:
+  requests:
+    memory: "256Mi"
+    cpu: "100m"
+  limits:
+    memory: "512Mi"
+    cpu: "250m"
+
+service:
+  type: LoadBalancer
+  loadBalancerIP: 192.168.2.225
+
+# Not sure if we want to enable this (default)
+# ref: https://kubernetes.io/docs/concepts/services-networking/service/#load-balancer-nodeport-allocation
+allocateLoadBalancerNodePorts: false
+
+persistence:
+  storageClass: longhorn
+  size: 5Gi
+
+arbiter:
+  enabled: false
+
+# [bitnami/mongodb] Mongodb Chart arm64 Support workaround
+# ref: https://github.com/bitnami/charts/issues/3635
+# The mongodb provided by the zcube/bitnami-compat repository does not currently work on Raspberry Pi 4. Use the image I distribute at https://github.com/ZCube/mongodb-for-armv8.0-a.
+# docker buildx build --build-arg VERSION=6.0.2 -f docker/Dockerfile.bitnami-compat -t registry.k3s-cluster.io/bitnami-compat-mongodb:6.0.2 --platform=linux/arm64 .
+image:
+  registry: ghcr.io
+  repository: zcube/mongodb-for-armv8.0-a/bitnami-compat-mongodb
+  tag: 6.0.2
+# hostAliases:
+#   - ip: "192.168.2.225"
+#     hostnames:
+#       - "registry.k3s-cluster.io"

@@ -1,0 +1,14 @@
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: k3s-cluster-io
+  namespace: traefik
+spec:
+  secretName: k3s-cluster-tls
+  issuerRef:
+    name: letsencrypt-production
+    kind: ClusterIssuer
+  commonName: "*.k3s-cluster.io"
+  dnsNames:
+    - "*.k3s-cluster.io"

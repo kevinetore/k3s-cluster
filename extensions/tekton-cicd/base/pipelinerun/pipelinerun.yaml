@@ -1,0 +1,39 @@
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  generateName: clone-build-push-
+  namespace: tekton-cicd
+spec:
+  pipelineRef:
+    name: git-clone-build-push-pipeline
+  podTemplate:
+    securityContext:
+      fsGroup: 65532
+    # https://kubernetes.io/docs/tasks/network/customize-hosts-file-for-pods/
+    hostAliases:
+      - ip: "192.168.2.225"
+        hostnames:
+          - "registry.k3s-cluster.io"
+  workspaces:
+    - name: workspace
+      volumeClaimTemplate:
+        spec:
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 1Gi
+    - name: ssh-directory-workspace
+      secret:
+        secretName: git-ssh-secret
+  # Parameters
+  # Git values will need to be set correctly
+  params:
+    - name: repo-url
+      value: git@github.com:kevinetore/k3s-cluster.git
+    - name: tag-name
+      value: master
+    - name: image-full-path-with-tag
+      value: registry.k3s-cluster.io/tekton-nodejs-demo:latest
+    - name: build-context
+      value: apps/tekton_node_demo

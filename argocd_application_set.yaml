@@ -1,0 +1,85 @@
+# https://github.com/argoproj/argo-cd/issues/2789
+# we cannot install argocd Helm charts with "custom" provided values.yaml stored in our Git
+# as a nice workaround we use kustomize with enabled helm deployments.
+
+# Progressive syncs alpha functionality
+# https://github.com/argoproj/argo-cd/issues/11924
+# https://github.com/argoproj/argo-cd/issues/12459
+
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: extensions
+  namespace: argocd
+spec:
+  generators:
+    - git:
+        repoURL: git@github.com:kevinetore/k3s-cluster.git
+        revision: HEAD
+        directories:
+          - path: core/*
+          - path: extensions/*
+          - path: extensions/mongodb
+            exclude: true
+  strategy:
+    type: RollingSync
+    rollingSync:
+      steps:
+        - matchExpressions:
+            - key: type
+              operator: In
+              values:
+                - core
+        - matchExpressions:
+            - key: type
+              operator: In
+              values:
+                - extensions
+  template:
+    metadata:
+      name: "{{path.basename}}"
+      labels:
+        type: "{{path[0]}}"
+    spec:
+      project: default
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: "{{path.basename}}"
+      syncPolicy:
+        syncOptions:
+          - ServerSideApply=true
+        automated:
+          prune: true
+          selfHeal: true
+      ignoreDifferences:
+        - group: ""
+          kind: Service
+          name: longhorn-frontend
+          jsonPointers:
+            - /spec/ports/0/nodePort
+        - group: "apiextensions.k8s.io"
+          kind: CustomResourceDefinition
+          name: bgppeers.metallb.io
+          jsonPointers:
+            - /spec/conversion/webhook/clientConfig/caBundle
+        - group: "apiextensions.k8s.io"
+          kind: CustomResourceDefinition
+          name: addresspools.metallb.io
+          jsonPointers:
+            - /spec/conversion/webhook/clientConfig/caBundle
+        - group: "pingcap.com/v1alpha1"
+          kind: TidbCluster
+          name: tidbclusters.pingcap.com
+          jsonPointers:
+            - /spec/pd/config
+            - /spec/tidb/config
+            - /spec/tikv/config
+        - group: "v1"
+          kind: Secret
+          name: camunda-connectors-auth-credentials
+          jsonPointers:
+            - /data/connectors-secret
+      sources:
+        - repoURL: git@github.com:kevinetore/k3s-cluster.git
+          targetRevision: HEAD
+          path: "{{path}}"

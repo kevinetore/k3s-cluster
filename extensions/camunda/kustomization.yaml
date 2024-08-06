@@ -1,0 +1,66 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+helmCharts:
+- name: camunda-platform
+  version: 8.2.10
+  repo: https://helm.camunda.io
+  valuesFile: values.yaml
+  namespace: camunda
+  releaseName: camunda
+
+resources:
+  - base/namespace.yaml
+  - base/ingress-operator.yaml
+  - base/ingress-tasklist.yaml
+  - base/ingress-zeebe-gateway.yaml
+
+# https://github.com/argoproj/argo-cd/issues/11143
+# Patch because StatefulSet with volume claim causes diff with ServerSideApply=true
+patches:
+  - target:
+      kind: StatefulSet
+      name: camunda-zeebe
+    patch: |-
+      - op: remove
+        path: /spec/volumeClaimTemplates
+      - op: add
+        path: /spec/volumeClaimTemplates
+        value:
+          - apiVersion: v1
+            kind: PersistentVolumeClaim
+            metadata:
+              name: data
+            spec:
+              accessModes:
+                - ReadWriteOnce
+              resources:
+                requests:
+                  storage: 1Gi
+              storageClassName: longhorn
+              volumeMode: Filesystem
+  - target:
+      kind: StatefulSet
+      name: elasticsearch-master
+    patch: |-
+      - op: remove
+        path: /spec/volumeClaimTemplates
+      - op: add
+        path: /spec/volumeClaimTemplates
+        value:
+          - apiVersion: v1
+            kind: PersistentVolumeClaim
+            metadata:
+              name: elasticsearch-master
+              labels:
+                app: elasticsearch-master
+                chart: elasticsearch
+                release: camunda
+            spec:
+              accessModes:
+                - ReadWriteOnce
+              resources:
+                requests:
+                  storage: 15Gi
+              storageClassName: longhorn
+              volumeMode: Filesystem

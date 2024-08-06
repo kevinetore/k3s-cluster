@@ -1,0 +1,27 @@
+# NOT BEING USED
+
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerTemplate
+metadata:
+  name: github-template
+spec:
+  params:
+    - name: gitrevision
+    - name: gitrepositoryurl
+  resourcetemplates:
+    - apiVersion: tekton.dev/v1beta1
+      kind: PipelineRun
+      metadata:
+        generateName: trigger-pipelinerun-from-webhook-
+      spec:
+        pipelineRef:
+          name: git-clone-build-push-pipeline
+        params:
+        - name: message
+          value: $(tt.params.message)
+        - name: contenttype
+          value: $(tt.params.contenttype)
+        - name: git-revision
+          value: $(tt.params.gitrevision)
+        - name: repo-url
+          value: $(tt.params.gitrepositoryurl)

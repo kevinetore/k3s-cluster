@@ -1,0 +1,16 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+helmCharts:
+- name: surrealdb
+  version: 0.1.0
+  repo: https://helm.surrealdb.com
+  namespace: tikv
+  releaseName: tikv
+  valuesFile: values.yaml
+
+resources:
+  - https://raw.githubusercontent.com/pingcap/tidb-operator/v1.4.5/manifests/crd.yaml
+  - base/namespace.yaml
+  - base/tidb-cluster.yaml
+  - base/ingress.yaml

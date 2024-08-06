@@ -1,0 +1,21 @@
+# https://devops.stackexchange.com/questions/14179/ssl-issue-while-reaching-kubernetes-dashboard
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: longhorn-dashboard
+  namespace: longhorn-system
+  annotations:
+    kubernetes.io/ingress.class: traefik-external
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`longhorn-dashboard.k3s-cluster.io`)
+      kind: Rule
+      services:
+        - name: longhorn-frontend
+          kind: Service
+          namespace: longhorn-system
+          port: 80
+  tls:
+    secretName: k3s-cluster-tls

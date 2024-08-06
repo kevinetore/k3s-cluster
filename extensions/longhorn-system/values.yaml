@@ -1,0 +1,12 @@
+defaultSettings:
+  defaultDataPath: /storage01/
+
+persistence:
+  defaultClassReplicaCount: 2
+
+service:
+  ui:
+    type: LoadBalancer
+    nodePort: null
+
+namespaceOverride: longhorn-system

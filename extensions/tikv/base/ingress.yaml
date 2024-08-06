@@ -1,0 +1,20 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: surrealdb-ingress
+  namespace: tikv
+  annotations:
+    kubernetes.io/ingress.class: traefik-external
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`surrealdb.k3s-cluster.io`)
+      kind: Rule
+      services:
+        - name: tikv-surrealdb
+          kind: Service
+          namespace: tikv
+          port: 8000
+  tls:
+    secretName: k3s-cluster-tls
